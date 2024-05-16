@@ -26,7 +26,7 @@ export const JobTypeSelection = <T extends string,>(props: {
     >
       <RadioGroup
         className={styles.jobContainer}
-        onChange={handleJobChange} // Użycie zaktualizowanej funkcji handleJobChange
+        onChange={handleJobChange} // Użycie zaktualizowanej funkcji handleJobChange unpaidbreak
       >
         {props.jobs.map(x => (
           <Radio
