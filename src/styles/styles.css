@@ -1,0 +1,9 @@
+html,
+* {
+  box-sizing: border-box;
+  font-family: "IBM Plex Sans", system-ui, Helvetica, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+}
