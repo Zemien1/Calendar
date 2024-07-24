@@ -1,13 +1,20 @@
 import { Text, makeStyles, mergeClasses, shorthands } from '@fluentui/react-components';
 import { CircleFilled } from '@fluentui/react-icons';
-import { JobOption } from '../lib/job';
+import { JobOption, generateColor } from '../lib/job';
 
 export const LegendBar = (props: {
   jobs: JobOption[];
 }) => {
   const styles = useStyles();
   const isAnySelected = props.jobs.reduce((acc, current) => acc || current.selected, false);
-
+/**const jobsOptions: JobOption[] = jobs.map(x => ({
+        id: x.ava_jobid,
+        name: x.ava_name,
+        color: generateColor(x.ava_jobid, x.ava_name),
+        selected: false,
+        isActive: generateIsActive(x.statecode),
+        ava_defaultunpaidbreak: x.ava_defaultunpaidbreakdurationjob
+      })); */
   return (
     <div className={styles.container}>
       <Text
@@ -22,7 +29,7 @@ export const LegendBar = (props: {
 
         return (
           <div className={mergeClasses(styles.legendItem, isDisabled && styles.disabled)} key={x.id}>
-            <CircleFilled primaryFill={x.color} className={styles.circleIcon} />
+            <CircleFilled primaryFill={generateColor(x.id, x.name)} className={styles.circleIcon} />
             <Text size={200} weight="semibold">{x.name}</Text>
           </div>
         );
