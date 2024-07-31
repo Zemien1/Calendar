@@ -1,11 +1,11 @@
 import { GriffelStyle, Text, makeStyles, mergeClasses, shorthands } from '@fluentui/react-components';
 import { CircleFilled } from '@fluentui/react-icons';
-import { ShiftStatus, colorMap, statusMap } from '../lib/shiftStatus'; // Import statusMap
+import { ShiftStatus, colorMap, statusMap } from '../lib/shiftStatus';
 import { Shift } from './Calendar';
 
 export const ShiftTile = (props: { shift: Shift; isCondensed: boolean; }) => {
   const styles = useStyles();
-  const statusClass = statusMap[props.shift.status] as ShiftStatus; // Mapowanie statusu na odpowiednią klasę
+  const statusClass = statusMap[props.shift.status] as ShiftStatus; // Convert status to ShiftStatus type
 
   return (
     <a
@@ -70,7 +70,7 @@ const useStyles = makeStyles({
     }
   },
   circleIcon: {
-    minHeight: '13px', // Poprawka literówki
+    minHeight: '13px',
     minWidth: '13px',
   },
   iconCondensedPositioning: {

@@ -12,9 +12,9 @@ export const ShiftOrderContainer = (props: {
   const shiftOrdersToDisplay = props.shiftOrders
     .map(shiftOrder => ({
       ...shiftOrder,
-      shifts: shiftOrder.shifts.filter(shift => props.selectedStatuses.length === 0 || props.selectedStatuses.includes(Number(shift.status)))
+      shifts: shiftOrder.shifts.filter(shift => props.selectedStatuses.length === 0 || props.selectedStatuses.includes(shift.status))
     }))
-    .filter(shiftOrder => shiftOrder.shifts.length > 0 && shiftOrder.remainingPositions >= 1);
+    .filter(shiftOrder => shiftOrder.shifts.length > 0 || shiftOrder.remainingPositions >= 1);
 
   // Sort shift orders by start time
   const sortedShiftOrders = shiftOrdersToDisplay.sort((a, b) => a.start.getTime() - b.start.getTime());

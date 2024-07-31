@@ -38,15 +38,6 @@ export const CalendarControl = () => {
         ava_defaultunpaidbreak: x.ava_defaultunpaidbreakdurationjob
       }));
 
-      // Zachowaj zaznaczenia filtrów jobów
-      const updatedJobsOptions = jobsOptions.map(job => {
-        const existingJob = jobs.find(j => j.id === job.id);
-        if (existingJob) {
-          return { ...job, selected: existingJob.selected };
-        }
-        return job;
-      });
-
       const shiftOrders: ShiftOrder[] = data.map(shiftOrder => {
         const job = shiftOrder.ava_JobName && {
           id: shiftOrder.ava_JobName.ava_jobid,
@@ -85,7 +76,15 @@ export const CalendarControl = () => {
       });
 
       setShiftOrders(shiftOrders);
-      setJobs(updatedJobsOptions);
+      setJobs(existingJobs => {
+        return jobsOptions.map(job => {
+          const existingJob = existingJobs.find(j => j.id === job.id);
+          if (existingJob) {
+            return { ...job, selected: existingJob.selected };
+          }
+          return job;
+        });
+      });
       setLoading(false);
     })();
   }, [week, refreshDataState]);
@@ -111,7 +110,7 @@ export const CalendarControl = () => {
     ? shiftOrders
         .map(shiftOrder => ({
           ...shiftOrder,
-          shifts: shiftOrder.shifts.filter(shift => selectedStatuses.length === 0 || selectedStatuses.includes(Number(shift.status))),
+          shifts: shiftOrder.shifts.filter(shift => selectedStatuses.length === 0 || selectedStatuses.includes(shift.status)),
         }))
         .filter(shiftOrder => shiftOrder.shifts.length > 0 && (selectedJobs.length === 0 || selectedJobs.includes(shiftOrder.job?.id ?? '')))
     : shiftOrders;
@@ -145,6 +144,7 @@ export const CalendarControl = () => {
             isViewCondensed={isViewCondensed}
             jobs={jobs}
             refreshData={() => setRefreshDataState(x => !x)}
+            selectedStatuses={selectedStatuses} // Dodane do przekazania statusów do kalendarza
           />
         </ScrollableContainer>
       )}
