@@ -1,16 +1,17 @@
 import { GriffelStyle, Text, makeStyles, mergeClasses, shorthands } from '@fluentui/react-components';
 import { CircleFilled } from '@fluentui/react-icons';
-import { ShiftStatus, colorMap } from '../lib/shiftStatus';
+import { ShiftStatus, colorMap, statusMap } from '../lib/shiftStatus'; // Import statusMap
 import { Shift } from './Calendar';
 
 export const ShiftTile = (props: { shift: Shift; isCondensed: boolean; }) => {
   const styles = useStyles();
+  const statusClass = statusMap[props.shift.status] as ShiftStatus; // Mapowanie statusu na odpowiednią klasę
 
   return (
     <a
       href={`/main.aspx?pagetype=entityrecord&etn=ava_shifts&id=${props.shift.id}`}
       target='_parent'
-      className={mergeClasses(styles.button, styles[props.shift.status])}
+      className={mergeClasses(styles.button, styles[statusClass])}
     >
       <Text
         className={styles.titleText}
@@ -69,7 +70,7 @@ const useStyles = makeStyles({
     }
   },
   circleIcon: {
-    minheight: '13px',
+    minHeight: '13px', // Poprawka literówki
     minWidth: '13px',
   },
   iconCondensedPositioning: {

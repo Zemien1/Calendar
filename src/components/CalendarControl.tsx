@@ -7,12 +7,11 @@ import { Week, getCurrentWeek } from '../lib/week';
 import { useEffect, useState } from 'react';
 import { getData, getJobs } from '../api/dataApi';
 import { parseDateTime } from '../lib/dateTime';
-import { hiddenStatuses, statusMap as shiftStatusMap } from '../lib/shiftStatus';
+import { hiddenStatuses, statusMap as shiftStatusMap, colorMap, StatusOption, ShiftStatus } from '../lib/shiftStatus';
 import { JobOption, generateColor, generateIsActive } from '../lib/job';
 import { Loader } from './Loader';
 import { ScrollableContainer } from './ScrollableContainer';
 import { statusMap as shiftOrderStatusMap } from '../lib/shiftOrderStatus';
-import { UnpaidBreak } from './NewShiftOrderDialog/UnpaidBreak';
 
 export const CalendarControl = () => {
   const styles = useStyles();
@@ -22,6 +21,7 @@ export const CalendarControl = () => {
   const [jobs, setJobs] = useState<JobOption[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isViewCondensed, setIsViewCondensed] = useState<boolean>(true);
+  const [shiftStatuses, setShiftStatuses] = useState<StatusOption[]>([]);
 
   useEffect(() => {
     void (async () => {
@@ -37,6 +37,15 @@ export const CalendarControl = () => {
         isActive: generateIsActive(x.statecode),
         ava_defaultunpaidbreak: x.ava_defaultunpaidbreakdurationjob
       }));
+
+      // Zachowaj zaznaczenia filtrów jobów
+      const updatedJobsOptions = jobsOptions.map(job => {
+        const existingJob = jobs.find(j => j.id === job.id);
+        if (existingJob) {
+          return { ...job, selected: existingJob.selected };
+        }
+        return job;
+      });
 
       const shiftOrders: ShiftOrder[] = data.map(shiftOrder => {
         const job = shiftOrder.ava_JobName && {
@@ -54,7 +63,7 @@ export const CalendarControl = () => {
             id: x.ava_shiftsid,
             start: parseDateTime(x.ava_expectedstarttime!),
             end: parseDateTime(x.ava_expectedendtime!),
-            status: shiftStatusMap[x.ava_statusshifts!],
+            status: Number(x.ava_statusshifts!), // Ensure the status is a number
             nurse: x.ava_Providers?.ava_fullname ?? 'No assignment',
             cost: x.ava_wagerate!,
             job: job
@@ -76,14 +85,38 @@ export const CalendarControl = () => {
       });
 
       setShiftOrders(shiftOrders);
-      setJobs(jobsOptions);
+      setJobs(updatedJobsOptions);
       setLoading(false);
     })();
   }, [week, refreshDataState]);
 
+  useEffect(() => {
+    // Initialize shift statuses
+    const statuses: StatusOption[] = Object.entries(shiftStatusMap)
+      .filter(([id]) => !hiddenStatuses.includes(Number(id)))
+      .map(([id, name]) => ({
+        id: Number(id),
+        name: name as ShiftStatus,
+        selected: false,
+        color: colorMap[name as ShiftStatus],
+      }));
+    setShiftStatuses(statuses);
+  }, []);
+
   const selectedJobs = jobs.filter(x => x.selected).map(x => x.id);
-  const isFilterActive = selectedJobs.length >= 1;
-  const filteredShiftOrders = isFilterActive ? shiftOrders.filter(x => isShiftOrderInFilters(x, selectedJobs)) : shiftOrders;
+  const selectedStatuses = shiftStatuses.filter(x => x.selected).map(x => x.id);
+  const isFilterActive = selectedJobs.length > 0 || selectedStatuses.length > 0;
+
+  const filteredShiftOrders = isFilterActive
+    ? shiftOrders
+        .map(shiftOrder => ({
+          ...shiftOrder,
+          shifts: shiftOrder.shifts.filter(shift => selectedStatuses.length === 0 || selectedStatuses.includes(Number(shift.status))),
+        }))
+        .filter(shiftOrder => shiftOrder.shifts.length > 0 && (selectedJobs.length === 0 || selectedJobs.includes(shiftOrder.job?.id ?? '')))
+    : shiftOrders;
+
+  const sortedShiftOrders = (orders: ShiftOrder[]) => orders.sort((a, b) => a.start.getTime() - b.start.getTime());
 
   return (
     <div className={styles.container}>
@@ -95,15 +128,18 @@ export const CalendarControl = () => {
         }}
         jobs={jobs}
         onJobsChange={setJobs}
+        shiftStatuses={shiftStatuses}
+        onShiftStatusesChange={setShiftStatuses}
         isCondensedView={isViewCondensed}
         onIsCondensedViewChange={setIsViewCondensed}
+        onRefreshData={() => setRefreshDataState(x => !x)}
       />
       {loading ? (
         <Loader />
       ) : (
         <ScrollableContainer height="calc(100vh - 130px)">
           <Calendar
-            shiftOrders={filteredShiftOrders}
+            shiftOrders={sortedShiftOrders(filteredShiftOrders)}
             shifts={filteredShiftOrders.flatMap(x => x.shifts)}
             week={week}
             isViewCondensed={isViewCondensed}
@@ -124,7 +160,3 @@ const useStyles = makeStyles({
     ...shorthands.padding('0', '10px', '5px')
   }
 });
-
-const isShiftOrderInFilters = (shiftOrder: ShiftOrder, selectedJobs: string[]) => {
-  return selectedJobs.includes(shiftOrder.job?.id ?? '');
-};

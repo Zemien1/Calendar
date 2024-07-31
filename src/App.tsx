@@ -1,4 +1,4 @@
-import { CalendarControl } from './components/CalendarControl';
+import {CalendarControl} from './components/CalendarControl';
 import './styles/styles.css';
 
 const App = () => <CalendarControl />;

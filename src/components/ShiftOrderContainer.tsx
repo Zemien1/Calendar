@@ -5,15 +5,24 @@ import { ShiftOrderTile } from './ShiftOrderTile';
 export const ShiftOrderContainer = (props: {
   shiftOrders: ShiftOrder[];
   isViewCondensed: boolean;
+  selectedStatuses: number[];
 }) => {
   const styles = useStyles();
   const allAssignments = props.shiftOrders.reduce((acc, current) => acc + current.numberOfAssignments, 0);
-  const shiftOrdersToDisplay = props.shiftOrders.filter(x => x.remainingPositions >= 1);
+  const shiftOrdersToDisplay = props.shiftOrders
+    .map(shiftOrder => ({
+      ...shiftOrder,
+      shifts: shiftOrder.shifts.filter(shift => props.selectedStatuses.length === 0 || props.selectedStatuses.includes(Number(shift.status)))
+    }))
+    .filter(shiftOrder => shiftOrder.shifts.length > 0 && shiftOrder.remainingPositions >= 1);
+
+  // Sort shift orders by start time
+  const sortedShiftOrders = shiftOrdersToDisplay.sort((a, b) => a.start.getTime() - b.start.getTime());
 
   return (
     <div className={styles.container}>
       <div className={styles.shiftOrderContainer}>
-        {shiftOrdersToDisplay.map(x => (
+        {sortedShiftOrders.map(x => (
           <ShiftOrderTile
             key={x.id}
             shiftOrder={x}

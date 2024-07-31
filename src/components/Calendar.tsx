@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import {
   TableBody,
   TableCell,
@@ -15,19 +16,19 @@ import groupBy from 'lodash/groupBy';
 import { getShiftName } from '../lib/shiftName';
 import { ShiftTile } from './ShiftTile';
 import { WeekDay } from './WeekDay';
-import { ShiftStatus } from '../lib/shiftStatus';
+import { StatusOption, statusMap, colorMap } from '../lib/shiftStatus';
 import { Week, weekDaysIndexes } from '../lib/week';
-import { Job } from '../lib/job';
-import { useState } from 'react';
+import { Job, JobOption } from '../lib/job';
 import { sortShiftEntriesAsc, sortShiftEntriesDesc } from '../lib/sort';
 import { ShiftOrderStatus } from '../lib/shiftOrderStatus';
 import { ShiftOrderContainer } from './ShiftOrderContainer';
+
 
 export interface Shift {
   id: string;
   start: Date;
   end: Date;
-  status: ShiftStatus;
+  status: number;
   nurse: string;
   cost: number;
   job: Job | null;
@@ -57,85 +58,97 @@ export const Calendar = (props: {
 }) => {
   const styles = useStyles();
   const [isSortedAsc, setIsSortedAsc] = useState<boolean>(true);
+  const [shiftStatuses, setShiftStatuses] = useState<StatusOption[]>([]);
+  const [jobOptions, setJobOptions] = useState<JobOption[]>([]);
+
+  useEffect(() => {
+    setJobOptions(props.jobs.map(job => ({ ...job, selected: false })));
+  }, [props.jobs]);
+
   const shiftsByShiftTime = groupBy(props.shifts, x => getShiftName(x.start, x.end));
   const shiftsByShiftTimeEntries = Object.entries(shiftsByShiftTime)
     .sort(isSortedAsc ? sortShiftEntriesAsc : sortShiftEntriesDesc);
   const shiftOrdersByDay = groupBy(props.shiftOrders, x => getWeekDayIndexFromDay(x.start.getDay()));
 
-  return (
-    <Table className={styles.container}>
-      <TableHeader>
-        <TableRow className={styles.stickyRow}>
-          <TableHeaderCell
-            className={mergeClasses(styles.cell, styles.weekDayCell, styles.titleCell)}
-            key="shift"
-          />
-          {props.week.days.map((weekday) => (
-            <th key={weekday.key} className={mergeClasses(styles.cell, styles.weekDayCell)}>
-              <WeekDay
-                jobs={props.jobs}
-                day={weekday}
-                refreshData={props.refreshData}
-              />
-            </th>
-          ))}
-        </TableRow>
-        <TableRow style={{ position: 'relative' }}>
-          <TableHeaderCell
-            className={styles.shiftColumn}
-            key="shift"
-            button={{
-              className: styles.shiftColumnButton,
-              onClick: () => setIsSortedAsc(x => !x)
-            }}
-          >
-            <Text size={400} weight="bold">Open Shifts</Text>
-            <CaretDown24Filled className={mergeClasses(styles.sortArrow, !isSortedAsc && styles.rotate)} />
-          </TableHeaderCell>
-          {props.week.days.map((weekday) => (
-            <TableHeaderCell
-              className={mergeClasses(styles.cell, styles.shiftOrderCell)}
-              key={weekday.key}
-              button={{ className: styles.headerButton }}
-            >
-              <ShiftOrderContainer
-                shiftOrders={shiftOrdersByDay[weekday.key] ?? []}
-                isViewCondensed={props.isViewCondensed}
-              />
-            </TableHeaderCell>
-          ))}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {shiftsByShiftTimeEntries.map(([shiftName, itemsByShift]) => {
-          const groupedByDay = groupBy(itemsByShift, x => getWeekDayIndexFromDay(x.start.getDay()));
+  const filteredShifts = props.shifts.filter(shift =>
+    shiftStatuses.some(status => status.selected && status.id === shift.status)
+  );
 
-          return (
-            <TableRow className={styles.row} key={shiftName}>
-              <TableCell className={mergeClasses(styles.cell, styles.titleCell)}>
-                <Text size={400} weight="bold">
-                  {shiftName}
-                </Text>
-              </TableCell>
-              {weekDaysIndexes.map((index) => {
-                const items = groupedByDay[index];
-                return (
-                  <TableCell className={styles.cell} key={index}>
-                    {items ? items.map(x => (
-                      <ShiftTile
-                        key={x.id}
-                        shift={x}
-                        isCondensed={props.isViewCondensed}
-                      />
-                    )) : null}
-                  </TableCell>
-                );
-              })}
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+  return (
+    <>
+      <Table className={styles.container}>
+        <TableHeader>
+          <TableRow className={styles.stickyRow}>
+            <TableHeaderCell
+              className={mergeClasses(styles.cell, styles.weekDayCell, styles.titleCell)}
+              key="shift"
+            />
+            {props.week.days.map((weekday) => (
+              <th key={weekday.key} className={mergeClasses(styles.cell, styles.weekDayCell)}>
+                <WeekDay
+                  jobs={props.jobs}
+                  day={weekday}
+                  refreshData={props.refreshData}
+                />
+              </th>
+            ))}
+          </TableRow>
+          <TableRow style={{ position: 'relative' }}>
+            <TableHeaderCell
+              className={styles.shiftColumn}
+              key="shift"
+              button={{
+                className: styles.shiftColumnButton,
+                onClick: () => setIsSortedAsc(x => !x)
+              }}
+            >
+              <Text size={400} weight="bold">Open Shifts</Text>
+              <CaretDown24Filled className={mergeClasses(styles.sortArrow, !isSortedAsc && styles.rotate)} />
+            </TableHeaderCell>
+            {props.week.days.map((weekday) => (
+              <TableHeaderCell
+                className={mergeClasses(styles.cell, styles.shiftOrderCell)}
+                key={weekday.key}
+                button={{ className: styles.headerButton }}
+              >
+                <ShiftOrderContainer
+                  shiftOrders={shiftOrdersByDay[weekday.key] ?? []}
+                  isViewCondensed={props.isViewCondensed} selectedStatuses={[]}                />
+              </TableHeaderCell>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {shiftsByShiftTimeEntries.map(([shiftName, itemsByShift]) => {
+            const groupedByDay = groupBy(itemsByShift, x => getWeekDayIndexFromDay(x.start.getDay()));
+
+            return (
+              <TableRow className={styles.row} key={shiftName}>
+                <TableCell className={mergeClasses(styles.cell, styles.titleCell)}>
+                  <Text size={400} weight="bold">
+                    {shiftName}
+                  </Text>
+                </TableCell>
+                {weekDaysIndexes.map((index) => {
+                  const items = groupedByDay[index];
+                  return (
+                    <TableCell className={styles.cell} key={index}>
+                      {items ? items.map(x => (
+                        <ShiftTile
+                          key={x.id}
+                          shift={x}
+                          isCondensed={props.isViewCondensed}
+                        />
+                      )) : null}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </>
   );
 };
 

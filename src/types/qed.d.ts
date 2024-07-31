@@ -30,6 +30,8 @@ interface Provider {
 }
 
 export interface Job {
+  id: string;
+  selected: any;
   ava_jobid: string;
   ava_name: string;
   statecode: number;

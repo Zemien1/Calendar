@@ -13,12 +13,12 @@ export type ShiftStatus =
   | 'to_resolve'
   | 'revoked';
 
-// no display shifts
-// 100000001: 'requested',
-// 100000002: 'proposed_to_client',
-// 100000003: 'request_withdrawn',
-// 100000004: 'request_rejected',
-// 100000005: 'not_assigned',
+export interface StatusOption {
+  id: number;
+  name: ShiftStatus;
+  selected: boolean;
+  color: string;
+}
 
 export const hiddenStatuses = [
   100000001,

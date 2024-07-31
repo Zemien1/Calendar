@@ -1,17 +1,25 @@
 import { Dropdown, Option, Text, makeStyles, shorthands } from '@fluentui/react-components';
 import { CircleFilled } from '@fluentui/react-icons';
-import { JobOption } from '../lib/job';
+import { StatusOption } from '../lib/shiftStatus';
 import { Dispatch, SetStateAction } from 'react';
 
-export const JobsFilterControl = (props: {
-  jobs: JobOption[];
-  onJobsChange: Dispatch<SetStateAction<JobOption[]>>;
+// Funkcja pomocnicza do przekształcania nazw statusów
+const formatStatusLabel = (status: string) => {
+  return status
+    .toLowerCase()
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, char => char.toUpperCase());
+};
+
+export const ShiftStatusFilterControl = (props: {
+  statuses: StatusOption[];
+  onStatusChange: Dispatch<SetStateAction<StatusOption[]>>;
 }) => {
   const styles = useStyles();
-  const selectedOptions = props.jobs.filter(x => x.selected).map(x => x.id);
+  const selectedOptions = props.statuses.filter(x => x.selected).map(x => x.id.toString());
   const dropdownValue = selectedOptions.length === 0
-    ? 'Filter by Job'
-    : `${selectedOptions.length} Jobs Selected`;
+    ? 'Filter by Status'
+    : `${selectedOptions.length} Statuses Selected`;
 
   return (
     <div className={styles.container}>
@@ -20,23 +28,23 @@ export const JobsFilterControl = (props: {
         size={200}
         weight="semibold"
       >
-        Jobs:
+        Statuses:
       </Text>
       <Dropdown
         multiselect={true}
         value={dropdownValue}
         selectedOptions={selectedOptions}
         onOptionSelect={(_, data) => {
-          props.onJobsChange(jobs =>
-            createNewJobsWithSelectedFn(jobs, job => data.selectedOptions.includes(job.id))
+          props.onStatusChange(statuses =>
+            createNewStatusesWithSelectedFn(statuses, status => data.selectedOptions.includes(status.id.toString()))
           );
         }}
       >
-        {props.jobs.map(x => (
+        {props.statuses.map(x => (
           <Option
             text={x.name}
-            key={x.id}
-            value={x.id}
+            key={x.id.toString()}
+            value={x.id.toString()}
             checkIcon={{
               style: {
                 minHeight: '16px',
@@ -45,7 +53,7 @@ export const JobsFilterControl = (props: {
             }}
           >
             <CircleFilled className={styles.circleIcon} color={x.color} />
-            {x.name}
+            {formatStatusLabel(x.name)}
           </Option>
         ))}
       </Dropdown>
@@ -55,6 +63,7 @@ export const JobsFilterControl = (props: {
 
 const useStyles = makeStyles({
   container: {
+    paddingLeft: '15px',
     display: 'flex',
     justifyContent: 'flex-end',
     alignItems: 'center',
@@ -71,14 +80,12 @@ const useStyles = makeStyles({
   },
 });
 
-const createNewJobsWithSelectedFn = (
-  jobs: JobOption[],
-  selectedFn: (job: JobOption) => boolean
-): JobOption[] => jobs.map(x => ({
+const createNewStatusesWithSelectedFn = (
+  statuses: StatusOption[],
+  selectedFn: (status: StatusOption) => boolean
+): StatusOption[] => statuses.map(x => ({
   id: x.id,
   name: x.name,
   color: x.color,
   selected: selectedFn(x),
-  isActive: x.isActive,
-  ava_defaultunpaidbreak: x.ava_defaultunpaidbreak
 }));
