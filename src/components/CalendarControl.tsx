@@ -10,6 +10,7 @@ import { JobOption, generateColor, generateIsActive } from '../lib/job';
 import { Loader } from './Loader';
 import { ScrollableContainer } from './ScrollableContainer';
 import { statusMap as shiftOrderStatusMap } from '../lib/shiftOrderStatus';
+import { ShowFiledOrders } from './ShowFilledOrders';
 
 export const CalendarControl = () => {
   const styles = useStyles();
@@ -20,6 +21,7 @@ export const CalendarControl = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [isViewCondensed, setIsViewCondensed] = useState<boolean>(true);
   const [shiftStatuses, setShiftStatuses] = useState<StatusOption[]>([]);
+  const [showFilledOrders, setShowFilledOrders] = useState<boolean>(true);
 
   useEffect(() => {
     void (async () => {
@@ -117,6 +119,9 @@ export const CalendarControl = () => {
         .filter(shiftOrder => shiftOrder.shifts.length > 0 || shiftOrder.remainingPositions >= 1)
     : shiftOrders;
 
+
+
+
   const sortedShiftOrders = (orders: ShiftOrder[]) => orders.sort((a, b) => a.start.getTime() - b.start.getTime());
 
   return (
@@ -134,19 +139,21 @@ export const CalendarControl = () => {
         isCondensedView={isViewCondensed}
         onIsCondensedViewChange={setIsViewCondensed}
         onRefreshData={() => setRefreshDataState(x => !x)}
-      />
+        ShowFilledOrders={showFilledOrders}  
+        onShowFilledOrdersChange={setShowFilledOrders}  />
       {loading ? (
         <Loader />
       ) : (
         <ScrollableContainer height="calc(100vh - 130px)">
           <Calendar
-            shiftOrders={sortedShiftOrders(filteredShiftOrders)}
-            shifts={filteredShiftOrders.flatMap(x => x.shifts)}
-            week={week}
-            isViewCondensed={isViewCondensed}
-            jobs={jobs}
-            refreshData={() => setRefreshDataState(x => !x)}
-            selectedStatuses={selectedStatuses} // Dodane do przekazania statusów do kalendarza
+              shiftOrders={sortedShiftOrders(filteredShiftOrders)}
+              shifts={filteredShiftOrders.flatMap(x => x.shifts)}
+              week={week}
+              isViewCondensed={isViewCondensed}
+              jobs={jobs}
+              refreshData={() => setRefreshDataState(x => !x)}
+              selectedStatuses={selectedStatuses} // Dodane do przekazania statusów do kalendarza
+              ShowFilledOrders={showFilledOrders}       
           />
         </ScrollableContainer>
       )}

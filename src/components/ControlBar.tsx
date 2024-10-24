@@ -6,10 +6,11 @@ import { JobsFilterControl } from './JobsFilterControl';
 import { ShiftStatusFilterControl } from './ShiftStatusFilterControl';
 import { CondensedViewControl } from './CondensedViewControl';
 import { JobOption } from '../lib/job';
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { LegendBar } from './LegendBar';
 import { StatusOption } from '../lib/shiftStatus';
 import { ResetControlButton } from './ResetControlButton';
+import { ShowFiledOrders } from './ShowFilledOrders';
 
 export const ControlBar = (props: {
   week: Week;
@@ -21,6 +22,8 @@ export const ControlBar = (props: {
   isCondensedView: boolean;
   onIsCondensedViewChange: Dispatch<SetStateAction<boolean>>;
   onRefreshData: () => void;
+  ShowFilledOrders: boolean;  // Dodaj tu poprawną nazwę
+  onShowFilledOrdersChange: Dispatch<SetStateAction<boolean>>;
 }) => {
   const styles = useStyles();
   const selectedJobOptions = props.jobs.filter(x => x.selected).map(x => x.id);
@@ -48,10 +51,11 @@ export const ControlBar = (props: {
           Reset Filter
         </ResetControlButton>
         <Divider className={styles.divider} vertical={true} />
-        <CondensedViewControl
-          isCondensedView={props.isCondensedView}
-          onIsCondensedViewChange={props.onIsCondensedViewChange}
-        />
+        <ShowFiledOrders
+        ShowFilledOrders={props.ShowFilledOrders}
+        onShowFilledOrdersChange={props.onShowFilledOrdersChange}
+      />
+
         <Button
           appearance="primary"
           className={styles.refreshButton}
@@ -75,6 +79,7 @@ const useStyles = makeStyles({
     width: '100%',
     display: 'flex',
     alignItems: 'center',
+    paddingRight:'10px',
     ...shorthands.gap('10px')
   },
   divider: shorthands.margin('0', '1%'),

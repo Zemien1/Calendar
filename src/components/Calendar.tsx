@@ -50,6 +50,7 @@ export interface ShiftOrder {
 }
 
 export const Calendar = (props: {
+  ShowFilledOrders: boolean;
   shiftOrders: ShiftOrder[];
   shifts: Shift[];
   week: Week;
@@ -92,7 +93,7 @@ export const Calendar = (props: {
               onClick: () => setIsSortedAsc(x => !x)
             }}
           >
-            <Text size={400} weight="bold">Open Shifts</Text>
+            <Text size={400} weight="bold">Shift Orders</Text>
             <CaretDown24Filled className={mergeClasses(styles.sortArrow, !isSortedAsc && styles.rotate)} />
           </TableHeaderCell>
           {props.week.days.map((weekday) => (
@@ -105,6 +106,7 @@ export const Calendar = (props: {
                 shiftOrders={shiftOrdersByDay[weekday.key] ?? []}
                 isViewCondensed={props.isViewCondensed}
                 selectedStatuses={props.selectedStatuses}
+                ShowFilledOrders={props.ShowFilledOrders}
               />
             </TableHeaderCell>
           ))}

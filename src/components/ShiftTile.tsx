@@ -4,7 +4,7 @@ import { ShiftStatus, colorMap, statusMap } from '../lib/shiftStatus';
 import { Shift } from './Calendar';
 import { useState } from 'react';
 
-export const ShiftTile = (props: { shift: Shift; isCondensed: boolean; }) => {
+export const ShiftTile = (props: { shift: Shift; isCondensed: boolean}) => {
   const styles = useStyles();
   const statusClass = statusMap[props.shift.status] as ShiftStatus;
   const [copied, setCopied] = useState(false); // Stan dla komunikatu "Copied!"

@@ -28,13 +28,15 @@ export const ShiftOrderTile = (props: { shiftOrder: ShiftOrder; isCondensed: boo
         )}
       </div>
       <div className={styles.row}>
-        <Text
-          className={styles.availablePositions}
-          size={100}
-          weight="bold"
-        >
-          {props.shiftOrder.requestedPositions}/{props.shiftOrder.remainingPositions}
-        </Text>
+      {(props.shiftOrder.requestedPositions > 0 || props.shiftOrder.remainingPositions > 0) && (
+    <Text
+      className={styles.availablePositions}
+      size={100}
+      weight="bold"
+    >
+      {props.shiftOrder.requestedPositions}/{props.shiftOrder.remainingPositions}
+    </Text>
+  )}
         <Text
           className={mergeClasses(styles.shiftName, styles.showOnBigScreen)}
           size={200}

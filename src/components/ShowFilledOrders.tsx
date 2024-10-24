@@ -22,6 +22,7 @@ export const ShowFiledOrders = (props: {
             size="large"
             weight="semibold"
             color="#000036"
+            className={styles.noWrap}
           >
             Show Filled Orders
           </Label>
@@ -39,9 +40,15 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'flex-end',
     alignItems: 'center',
+    paddingRight:'20px'
   },
   smallText: {
     color: '#899197',
     marginRight: '10px'
+  },
+  noWrap: {
+    display: 'flex',
+    alignItems: 'center',
+    whiteSpace: 'nowrap', // Zapobiega zawijaniu tekstu
   }
 });

@@ -3,6 +3,7 @@ import { ShiftOrder } from './Calendar';
 import { ShiftOrderTile } from './ShiftOrderTile';
 
 export const ShiftOrderContainer = (props: {
+  ShowFilledOrders: boolean;
   shiftOrders: ShiftOrder[];
   isViewCondensed: boolean;
   selectedStatuses: number[];
@@ -14,7 +15,7 @@ export const ShiftOrderContainer = (props: {
       ...shiftOrder,
       shifts: shiftOrder.shifts.filter(shift => props.selectedStatuses.length === 0 || props.selectedStatuses.includes(shift.status))
     }))
-    .filter(shiftOrder => shiftOrder.remainingPositions >= 1);
+    .filter(shiftOrder => props.ShowFilledOrders || shiftOrder.remainingPositions >= 1);
 
   // Sort shift orders by start time
   const sortedShiftOrders = shiftOrdersToDisplay.sort((a, b) => a.start.getTime() - b.start.getTime());
