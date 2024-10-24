@@ -16,9 +16,13 @@ export interface NewShiftOrder {
 
 const getDataQuery = (clientId: string | null, weekStartPoint: Date, weekEndPoint: Date): Record<string, string> => ({
   '$select': 'ava_shiftorderid,ava_starttime,ava_endtime,ava_status,ava_pendingproviders,ava_requestedpositions,ava_remainingpositionstofillin,ava_numberofassignmentshifts,ava_shiftpremium,ava_unpaidbreak',
-  '$expand': 'ava_ava_shiftorder_ava_shifts_shiftorder($select=ava_shiftsid,ava_expectedstarttime,ava_expectedendtime,ava_statusshifts,ava_wagerate;$expand=ava_Providers($select=ava_providersid,ava_fullname)),ava_JobName($select=ava_jobid,ava_name,ava_defaultunpaidbreakdurationjob)',
+  '$expand': `
+    ava_ava_shiftorder_ava_shifts_shiftorder($select=sh_origin,ava_shiftsid,ava_expectedstarttime,ava_expectedendtime,ava_statusshifts,ava_wagerate;$expand=ava_Providers($select=ava_providersid,ava_fullname)),
+    ava_JobName($select=ava_jobid,ava_name,ava_defaultunpaidbreakdurationjob),createdby($select=domainname)
+  `,
   '$filter': `${clientId ? `_ava_client_value eq '${clientId}' and ` : ''}ava_starttime gt '${toLocalISOString(weekStartPoint)}' and ava_starttime lt '${toLocalISOString(weekEndPoint)}'`,
 });
+
 
 export const getData = async (weekStartPoint: Date, weekEndPoint: Date): Promise<ShiftOrder[]> => {
   const clientId = getCurrentAccount();

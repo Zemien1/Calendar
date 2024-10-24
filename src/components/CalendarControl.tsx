@@ -1,5 +1,3 @@
-// filtering out null values doesn't provide type safety
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { makeStyles, shorthands } from '@fluentui/react-components';
 import { Calendar, Shift, ShiftOrder } from './Calendar';
 import { ControlBar } from './ControlBar';
@@ -57,7 +55,8 @@ export const CalendarControl = () => {
             status: Number(x.ava_statusshifts!), // Ensure the status is a number
             nurse: x.ava_Providers?.ava_fullname ?? 'No assignment',
             cost: x.ava_wagerate!,
-            job: job
+            job: job,
+            sh_origin: x.sh_origin ?? false
           }));
 
         return {
@@ -71,7 +70,9 @@ export const CalendarControl = () => {
           premium: shiftOrder.ava_shiftpremium,
           break: shiftOrder.ava_unpaidbreak,
           job: job,
-          shifts: shiftOrderShifts
+          shifts: shiftOrderShifts,
+          createdby: shiftOrder.createdby ? { domainname: shiftOrder.createdby.domainname } : { domainname: 'Unknown' },
+          sh_origin: origin
         };
       });
 
@@ -92,12 +93,12 @@ export const CalendarControl = () => {
   useEffect(() => {
     // Initialize shift statuses
     const statuses: StatusOption[] = Object.entries(shiftStatusMap)
-      .filter(([id]) => !hiddenStatuses.includes(Number(id)))
-      .map(([id, name]) => ({
-        id: Number(id),
-        name: name as ShiftStatus,
-        selected: false,
-        color: colorMap[name as ShiftStatus],
+    .filter(([id]) => !hiddenStatuses.includes(Number(id)))
+    .map(([id, name]) => ({
+      id: Number(id),
+      name: name as ShiftStatus,
+      selected: name !== 'canceled', 
+      color: colorMap[name as ShiftStatus],
       }));
     setShiftStatuses(statuses);
   }, []);
@@ -108,11 +109,12 @@ export const CalendarControl = () => {
 
   const filteredShiftOrders = isFilterActive
     ? shiftOrders
+        .filter(shiftOrder => selectedJobs.length === 0 || selectedJobs.includes(shiftOrder.job?.id ?? ''))
         .map(shiftOrder => ({
           ...shiftOrder,
           shifts: shiftOrder.shifts.filter(shift => selectedStatuses.length === 0 || selectedStatuses.includes(shift.status)),
         }))
-        .filter(shiftOrder => shiftOrder.shifts.length > 0 && (selectedJobs.length === 0 || selectedJobs.includes(shiftOrder.job?.id ?? '')))
+        .filter(shiftOrder => shiftOrder.shifts.length > 0 || shiftOrder.remainingPositions >= 1)
     : shiftOrders;
 
   const sortedShiftOrders = (orders: ShiftOrder[]) => orders.sort((a, b) => a.start.getTime() - b.start.getTime());

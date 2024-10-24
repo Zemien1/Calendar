@@ -27,10 +27,11 @@ export interface Shift {
   id: string;
   start: Date;
   end: Date;
-  status: number; // Poprawiono typ statusu na number
+  status: number;
   nurse: string;
   cost: number;
   job: Job | null;
+  sh_origin: boolean
 }
 
 export interface ShiftOrder {
@@ -45,6 +46,7 @@ export interface ShiftOrder {
   break: number | null;
   job: Job | null;
   shifts: Shift[];
+  createdby: { domainname: string } | null;
 }
 
 export const Calendar = (props: {
@@ -54,7 +56,7 @@ export const Calendar = (props: {
   isViewCondensed: boolean;
   jobs: Job[];
   refreshData: () => void;
-  selectedStatuses: number[]; // Dodane do przekazania statusów do ShiftOrderContainer
+  selectedStatuses: number[];
 }) => {
   const styles = useStyles();
   const [isSortedAsc, setIsSortedAsc] = useState<boolean>(true);
@@ -102,7 +104,7 @@ export const Calendar = (props: {
               <ShiftOrderContainer
                 shiftOrders={shiftOrdersByDay[weekday.key] ?? []}
                 isViewCondensed={props.isViewCondensed}
-                selectedStatuses={props.selectedStatuses} // Dodane do przekazania statusów do ShiftOrderContainer
+                selectedStatuses={props.selectedStatuses}
               />
             </TableHeaderCell>
           ))}

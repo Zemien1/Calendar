@@ -13,6 +13,7 @@ export interface ShiftOrder {
   ava_ava_shiftorder_ava_shifts_shiftorder: Shift[];
   ava_JobName: Job | null;
   ava_unpaidbreak: number | null;
+  createdby: {domainname: string} | null;
 }
 
 interface Shift {
@@ -22,6 +23,7 @@ interface Shift {
   ava_statusshifts: number | null;
   ava_wagerate: number | null;
   ava_Providers: Provider | null;
+  sh_origin: boolean | null;
 }
 
 interface Provider {

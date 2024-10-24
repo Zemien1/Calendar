@@ -1,26 +1,53 @@
 import { GriffelStyle, Text, makeStyles, mergeClasses, shorthands } from '@fluentui/react-components';
-import { CircleFilled } from '@fluentui/react-icons';
+import { CircleFilled, Copy16Regular } from '@fluentui/react-icons';
 import { ShiftStatus, colorMap, statusMap } from '../lib/shiftStatus';
 import { Shift } from './Calendar';
+import { useState } from 'react';
 
 export const ShiftTile = (props: { shift: Shift; isCondensed: boolean; }) => {
   const styles = useStyles();
-  const statusClass = statusMap[props.shift.status] as ShiftStatus; // Convert status to ShiftStatus type
+  const statusClass = statusMap[props.shift.status] as ShiftStatus;
+  const [copied, setCopied] = useState(false); // Stan dla komunikatu "Copied!"
+  const [showCopyIcon, setShowCopyIcon] = useState(false); // Stan do zarządzania widocznością ikony
+
+  const handleCopyClick = (event: React.MouseEvent, providerName: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+    navigator.clipboard.writeText(providerName);
+    setCopied(false);
+    setTimeout(() => setCopied(false), 2000); // Komunikat "Copied!" na 2 sekundy
+  };
 
   return (
     <a
       href={`/main.aspx?pagetype=entityrecord&etn=ava_shifts&id=${props.shift.id}`}
       target='_parent'
       className={mergeClasses(styles.button, styles[statusClass])}
+      onMouseEnter={() => setShowCopyIcon(true)}  // Pokaż ikonę kopiowania po najechaniu
+      onMouseLeave={() => setShowCopyIcon(false)} // Ukryj ikonę kopiowania po opuszczeniu
     >
-      <Text
-        className={styles.titleText}
-        size={200}
-        weight="bold"
-      >
-        {props.shift.nurse}
-      </Text>
-      <Text size={200} weight="medium">${props.shift.cost}/hr</Text>
+      <div className={mergeClasses(styles.providerContainer, showCopyIcon && styles.hoverEffect)}> {/* Dodaj efekt podświetlenia na kontener */}
+        <Text className={styles.titleText} size={200} weight="bold">
+          {props.shift.nurse}
+        </Text>
+        {showCopyIcon && (  // Warunkowe renderowanie ikony kopiowania
+          <Copy16Regular 
+            className={styles.copyIcon} 
+            onClick={(event) => handleCopyClick(event, props.shift.nurse)} 
+            title="Copy to clipboard" 
+          />
+        )}
+        {copied && <Text size={100} className={styles.copiedText}>Copied!</Text>}
+      </div>
+
+      <div className={styles.costAndCp}>
+        <Text size={200} weight="medium">
+          ${props.shift.cost}/hr
+        </Text>
+        {props.shift.sh_origin === true && (
+          <Text className={styles.cpText} weight="medium">CP</Text>
+        )}
+      </div>
       {props.isCondensed ? (
         <CircleFilled
           primaryFill={props.shift.job?.color ?? 'white'}
@@ -65,9 +92,46 @@ const useStyles = makeStyles({
   },
   titleText: {
     color: '#000036',
+    transitionProperty: 'color', // Rozbicie transition
+    transitionDuration: '0.2s',
+    transitionTimingFunction: 'ease',
     ':hover': {
       color: '#000036',
     }
+  },
+
+  providerContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    ...shorthands.gap('3px'),
+    position: 'relative',
+  },
+
+  hoverEffect: {  // Styl dla podświetlenia
+    backgroundColor: '#f0f0f0',  // Podświetlenie kontenera
+    ...shorthands.borderRadius('4px'),        // Dodaj obramowanie, aby podświetlenie było ładne
+  },
+
+  copyIcon: {
+    cursor: 'pointer',
+    fontSize: '16px',
+    color: '#615ec5',
+    transitionProperty: 'color', // Rozbicie transition
+    transitionDuration: '0.2s',
+    transitionTimingFunction: 'ease',
+    ':hover': {
+      color: '#4b4bb5',
+    },
+  },
+
+  copiedText: {
+    color: '#0078D4',
+  },
+
+  costAndCp: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'space-between',
   },
   circleIcon: {
     minHeight: '13px',
@@ -85,6 +149,10 @@ const useStyles = makeStyles({
     width: '100%',
     display: 'flex',
     ...shorthands.gap('3px')
+  },
+  cpText: {
+    marginLeft: 'auto',
+    color: 'black',
   },
   ...stylesByStatus,
 });

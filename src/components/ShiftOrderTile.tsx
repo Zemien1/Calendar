@@ -21,7 +21,11 @@ export const ShiftOrderTile = (props: { shiftOrder: ShiftOrder; isCondensed: boo
         >
           {getShiftName(props.shiftOrder.start, props.shiftOrder.end)}
         </Text>
-        {props.isCondensed && <div style={{ backgroundColor: props.shiftOrder.job?.color ?? 'white' }} className={styles.circleIcon} />}
+        {props.isCondensed && (
+          <>
+            <div style={{ backgroundColor: props.shiftOrder.job?.color ?? 'white' }} className={styles.circleIcon} />
+          </>
+        )}
       </div>
       <div className={styles.row}>
         <Text
@@ -42,14 +46,22 @@ export const ShiftOrderTile = (props: { shiftOrder: ShiftOrder; isCondensed: boo
           {props.shiftOrder.premium && `+$${props.shiftOrder.premium}/h`}
         </Text>
         {props.isCondensed && (
-          <div
-            style={{ backgroundColor: props.shiftOrder.job?.color ?? 'white' }}
-            className={mergeClasses(styles.circleIcon, styles.showOnBigScreen)}
-          />
+          <>
+            {props.shiftOrder.createdby?.domainname.includes('EXT') && (
+              <Text className={styles.cpText} weight="bold">CP</Text>
+            )}
+            <div
+              style={{ backgroundColor: props.shiftOrder.job?.color ?? 'white' }}
+              className={mergeClasses(styles.circleIcon, styles.showOnBigScreen)}
+            />
+          </>
         )}
       </div>
       {!props.isCondensed && (
         <div className={styles.jobDescription}>
+          {props.shiftOrder.createdby?.domainname.includes('EXT') && (
+            <Text className={styles.cpText} weight="bold">CP</Text>
+          )}
           <div
             style={{ backgroundColor: props.shiftOrder.job?.color ?? 'white' }}
             className={mergeClasses(styles.circleIcon, styles.iconNotCondensedPositioning)}
@@ -141,6 +153,10 @@ const useStyles = makeStyles({
     width: '100%',
     display: 'flex',
     ...shorthands.gap('3px'),
+  },
+  cpText: {
+    marginRight: '5px',
+    color: 'white',
   },
   ...stylesByStatus
 });
